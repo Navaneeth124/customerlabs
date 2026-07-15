@@ -35,14 +35,14 @@ This command runs tests, staging models, and attribution marts.
 ### 3. Run Streaming Demo
 Simulate near-real-time events:
 ```bash
-python streaming_demo.py
+python streaming/streaming_demo.py
 ```
 This script will insert 5-20 events into BigQuery. It uses `event_id` to ensure deduplication (idempotency).
 
 ### 4. Run the Dashboard
 Launch the Streamlit app:
 ```bash
-streamlit run app.py
+streamlit run dashboard/app.py
 ```
 The app will connect to BigQuery and visualize the First-Click vs Last-Click attribution along with live events.
 
