@@ -9,7 +9,7 @@ from google.cloud import bigquery
 # e.g., os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/path/to/key.json"
 
 PROJECT_ID = "luminous-return-502518-t7"
-DATASET_ID = "customerlabs_dataset"
+DATASET_ID = "ga4_attribution"
 TABLE_ID = "streamed_events"
 TABLE_REF = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
 

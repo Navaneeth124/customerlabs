@@ -67,7 +67,7 @@ def fetch_bq_data(client):
                 CONCAT(first_click_source, ' / ', first_click_medium) as channel,
                 COUNT(transaction_id) as conversions,
                 SUM(purchase_revenue) as revenue
-            FROM `{PROJECT_ID}.customerlabs_dataset.mart_attribution_first_click`
+            FROM `{PROJECT_ID}.ga4_attribution.mart_attribution_first_click`
             WHERE conversion_time >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 14 DAY)
             GROUP BY 1, 2
         """
@@ -79,14 +79,14 @@ def fetch_bq_data(client):
                 SELECT 
                     CONCAT(first_click_source, ' / ', first_click_medium) as channel,
                     COUNT(transaction_id) as first_click_conversions
-                FROM `{PROJECT_ID}.customerlabs_dataset.mart_attribution_first_click`
+                FROM `{PROJECT_ID}.ga4_attribution.mart_attribution_first_click`
                 GROUP BY 1
             ),
             lc AS (
                 SELECT 
                     CONCAT(last_click_source, ' / ', last_click_medium) as channel,
                     COUNT(transaction_id) as last_click_conversions
-                FROM `{PROJECT_ID}.customerlabs_dataset.mart_attribution_last_click`
+                FROM `{PROJECT_ID}.ga4_attribution.mart_attribution_last_click`
                 GROUP BY 1
             )
             SELECT 
@@ -105,7 +105,7 @@ def fetch_bq_data(client):
                 event_name,
                 user_pseudo_id as user,
                 CONCAT(source, ' / ', medium) as channel
-            FROM `{PROJECT_ID}.customerlabs_dataset.streamed_events`
+            FROM `{PROJECT_ID}.ga4_attribution.streamed_events`
             ORDER BY event_timestamp DESC
             LIMIT 20
         """
