@@ -14,6 +14,7 @@ conversions AS (
         purchase_revenue
     FROM events
     WHERE event_name = 'purchase'
+      AND transaction_id IS NOT NULL
 ),
 
 user_touchpoints AS (
