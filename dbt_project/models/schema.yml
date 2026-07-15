@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_events
+    description: "Staging model for GA4 events, extracting parameters and deduplicating."
+    columns:
+      - name: user_pseudo_id
+        description: "Anonymous user identifier (cookie based)."
+        tests:
+          - not_null
+      - name: event_time
+        description: "Timestamp of the event."
+        tests:
+          - not_null
+      - name: event_name
+        description: "Name of the event (e.g., page_view, purchase)."
+        tests:
+          - not_null
+
+  - name: mart_attribution_first_click
+    description: "First-click attribution model assigning 100% of purchase credit to the first touchpoint in a 30-day window."
+    columns:
+      - name: transaction_id
+        description: "Unique identifier for the conversion."
+        tests:
+          - unique
+          - not_null
+      - name: purchase_revenue
+        description: "Revenue generated from the purchase."
+
+  - name: mart_attribution_last_click
+    description: "Last-click attribution model assigning 100% of purchase credit to the most recent touchpoint before conversion."
+    columns:
+      - name: transaction_id
+        description: "Unique identifier for the conversion."
+        tests:
+          - unique
+          - not_null
+      - name: purchase_revenue
+        description: "Revenue generated from the purchase."
