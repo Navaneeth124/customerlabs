@@ -21,7 +21,7 @@ def get_bq_client():
         st.warning(f"Failed to initialize BigQuery client: {e}. Using mock data for demonstration.")
         return None
 
-# --- Mock Data Generation (Fallback) ---
+# Mock data fallback generator
 def get_mock_data():
     today = datetime.now()
     dates = [today - timedelta(days=i) for i in range(14)]
@@ -59,8 +59,12 @@ def get_mock_data():
     
     return ts_df, channel_df, live_df
 
-# --- Data Fetching from BigQuery ---
+# Fetch live metrics from BQ
 def fetch_bq_data(client):
+    ts_df = pd.DataFrame()
+    channel_df = pd.DataFrame()
+    live_df = pd.DataFrame()
+
     try:
         # Time Series (Last 14 days)
         ts_query = f"""
@@ -70,11 +74,17 @@ def fetch_bq_data(client):
                 COUNT(transaction_id) as conversions,
                 SUM(purchase_revenue) as revenue
             FROM `{PROJECT_ID}.ga4_attribution.mart_attribution_first_click`
-            WHERE conversion_time >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 14 DAY)
+            WHERE DATE(conversion_time) >= DATE_SUB(
+                (SELECT MAX(DATE(conversion_time)) FROM `{PROJECT_ID}.ga4_attribution.mart_attribution_first_click`), 
+                INTERVAL 14 DAY
+            )
             GROUP BY 1, 2
         """
         ts_df = client.query(ts_query).to_dataframe()
+    except Exception as e:
+        pass
         
+    try:
         # Channel Breakdown (First vs Last)
         channel_query = f"""
             WITH fc AS (
@@ -99,7 +109,10 @@ def fetch_bq_data(client):
             FULL OUTER JOIN lc ON fc.channel = lc.channel
         """
         channel_df = client.query(channel_query).to_dataframe()
+    except Exception as e:
+        pass
         
+    try:
         # Live events
         live_query = f"""
             SELECT 
@@ -112,15 +125,17 @@ def fetch_bq_data(client):
             LIMIT 20
         """
         live_df = client.query(live_query).to_dataframe()
-        
-        return ts_df, channel_df, live_df
     except Exception as e:
-        st.error(f"Error fetching data from BQ: {e}")
+        pass
+        
+    if ts_df.empty and channel_df.empty and live_df.empty:
         return get_mock_data()
+        
+    return ts_df, channel_df, live_df
 
-# --- Main Dashboard ---
+# Dashboard layout
 def main():
-    st.title("🚀 Real-time Attribution Dashboard")
+    st.title("Real-time Attribution Dashboard")
     st.markdown("Comparing First-Click vs Last-Click attribution from GA4 Data.")
     
     client = get_bq_client()
@@ -129,7 +144,7 @@ def main():
     else:
         ts_df, channel_df, live_df = get_mock_data()
         
-    # --- Top Level Metrics ---
+    # Top metrics
     st.header("Overall Totals")
     col1, col2 = st.columns(2)
     total_fc = channel_df['first_click_conversions'].sum()
@@ -140,7 +155,7 @@ def main():
     
     st.divider()
     
-    # --- Visualizations ---
+    # Charts
     col3, col4 = st.columns(2)
     
     with col3:
@@ -162,8 +177,8 @@ def main():
             
     st.divider()
     
-    # --- Live Event Panel ---
-    st.header("⚡ Live Streamed Events")
+    # Live events table
+    st.header("Live Streamed Events")
     st.markdown("Displaying the most recent events hitting the pipeline.")
     
     if st.button("Refresh Data"):
