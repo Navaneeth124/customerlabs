@@ -64,4 +64,4 @@ The app will connect to BigQuery and visualize the First-Click vs Last-Click att
 
 ### Expected Latency & Idempotency
 *   **Streaming Latency**: Events sent via the BigQuery streaming insert are available in the streaming buffer for querying almost instantly (< 5 minutes).
-*   **Idempotency**: The streaming script assigns a unique `event_id` per record. The `stg_events.sql` dbt model uses a `ROW_NUMBER()` window function partitioned by `user_pseudo_id`, `event_timestamp`, and `event_name` to deduplicate events downstream, ensuring metrics remain accurate even if identical events are streamed twice.
+*   **Idempotency**: The streaming script assigns a unique `event_id` per record. The `stg_events.sql` dbt model uses a `ROW_NUMBER()` window function partitioned by `user_pseudo_id`, `event_timestamp`, and `event_name` to deduplicate events downstream, ensuring metrics remain accurate even if identical events are streamed twice
